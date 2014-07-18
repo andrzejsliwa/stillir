@@ -3,6 +3,7 @@
 -export([set_config/2,
          set_config/3,
          set_config/4,
+         get_config/1,
          get_config/2,
          get_config/3,
          update_env/3]).
@@ -21,6 +22,7 @@
 -type config_spec() :: {app_key(), env_key()}|
                        {app_key(), env_key(), opts()}.
 -type config_specs() :: [config_spec()].
+-type configuration() :: [{env_key, any()}].
 
 -spec set_config(app_name(), config_specs()|[]) -> ok|no_return().
 set_config(_, []) ->
@@ -41,6 +43,10 @@ set_config(AppName, AppKey, EnvKey) ->
 set_config(AppName, AppKey, EnvKey, Opts) ->
     EnvValue = get_env(EnvKey),
     set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts).
+
+-spec get_config(app_name()) -> configuration().
+get_config(AppName) ->
+    application:get_all_env(AppName).
 
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().
 get_config(AppName, AppKey) ->
@@ -95,7 +101,7 @@ reread_environment(AppName, NewValues, [{AppKey, EnvKey}|Rest]) ->
 reread_environment(AppName, NewValues, [{AppKey, EnvKey, Opts}|Rest]) ->
     set_config(AppName, AppKey, {EnvKey, NewValues}, Opts),
     reread_environment(AppName, NewValues, Rest).
-    
+
 get_env({EnvKey, EnvList}) ->
     case proplists:get_value(EnvKey, EnvList) of
         undefined ->
